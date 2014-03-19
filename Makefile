@@ -10,7 +10,7 @@ endif
 
 all: release
 
-release: test build
+release: build
 	$(DOCKER) push $(REPO)
 
 build:
