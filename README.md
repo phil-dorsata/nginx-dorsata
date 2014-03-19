@@ -5,11 +5,15 @@ NGiNX, on top of Ubuntu 12.10.
 ## Installation and Usage
 
     docker pull quay.io/aptible/nginx
-    docker run quay.io/aptible/nginx
+    docker run -P quay.io/aptible/nginx
+
+To run with your own NGiNX site configuration file:
+
+    docker run -P -v <sites-enabled-dir>:/etc/nginx/sites-enabled quay.io/aptible/nginx
 
 ## Available Tags
 
-* `latest`: Currently NGiNX 1.2.1
+* `latest`: Currently NGiNX 1.4.6
 
 ## Deployment
 

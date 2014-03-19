@@ -1,7 +1,15 @@
 FROM quay.io/aptible/ubuntu:12.10
 
-RUN apt-get -y install nginx && echo "daemon off;" >> /etc/nginx/nginx.conf
+# Install NGiNX from
+RUN apt-get install -y software-properties-common && \
+      add-apt-repository -y ppa:nginx/stable && apt-get update && \
+      apt-get -y install nginx && \
+      echo "daemon off;" >> /etc/nginx/nginx.conf
 
-EXPOSE 443 80
+ADD test /tmp/test
+RUN bats /tmp/test
 
-CMD /usr/sbin/nginx -c /etc/nginx/nginx.conf
+VOLUME ["/etc/nginx/sites-enabled"]
+EXPOSE 80 443
+
+CMD ["/usr/sbin/nginx"]
