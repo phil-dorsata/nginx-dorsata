@@ -1,6 +1,8 @@
 # ![](https://gravatar.com/avatar/11d3bc4c3163e3d238d558d5c9d98efe?s=64) aptible/nginx
 
-NGiNX, on top of Ubuntu 12.10.
+[![Docker Repository on Quay.io](https://quay.io/repository/aptible/nginx/status)](https://quay.io/repository/aptible/nginx)
+
+NGiNX HTTP server.
 
 ## Installation and Usage
 
@@ -13,7 +15,7 @@ To run with your own NGiNX site configuration file:
 
 ## Available Tags
 
-* `latest`: Currently NGiNX 1.4.6
+* `latest`: Currently NGiNX 1.4.7
 
 ## Deployment
 
