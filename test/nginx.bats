@@ -11,15 +11,35 @@ uninstall-heartbleed() {
   rm -rf ${GOPATH}
 }
 
+setup() {
+  cp ${BATS_TEST_DIRNAME}/templates/server.conf /etc/nginx/sites-enabled/
+  cp ${BATS_TEST_DIRNAME}/templates/server.crt /etc/nginx/ssl/
+  cp ${BATS_TEST_DIRNAME}/templates/server.key /etc/nginx/ssl/
+
+  /usr/sbin/nginx &
+}
+
+teardown() {
+  rm /etc/nginx/sites-enabled/server.conf
+  rm /etc/nginx/ssl/server.crt
+  rm /etc/nginx/ssl/server.key
+
+  pkill nginx
+}
+
 @test "It should install NGiNX 1.6.0" {
   run /usr/sbin/nginx -v
   [[ "$output" =~ "1.6.0"  ]]
 }
 
 @test "It should pass an external Heartbleed test" {
-  /usr/sbin/nginx -c ${BATS_TEST_DIRNAME}/templates/nginx.conf &
   install-heartbleed
   Heartbleed localhost:443
   uninstall-heartbleed
-  pkill nginx
+}
+
+@test "It should accept large file uploads" {
+  dd if=/dev/zero of=zeros.bin count=1024 bs=4096
+  run curl -k --form upload=@zeros.bin --form press=OK https://localhost:443/
+  [[ ! "$output" =~ "413"  ]]
 }
