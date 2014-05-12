@@ -11,9 +11,9 @@ uninstall-heartbleed() {
   rm -rf ${GOPATH}
 }
 
-@test "It should install NGiNX 1.4.7" {
+@test "It should install NGiNX 1.6.0" {
   run /usr/sbin/nginx -v
-  [[ "$output" =~ "1.4.7"  ]]
+  [[ "$output" =~ "1.6.0"  ]]
 }
 
 @test "It should pass an external Heartbleed test" {
