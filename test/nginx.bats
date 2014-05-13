@@ -43,3 +43,10 @@ teardown() {
   run curl -k --form upload=@zeros.bin --form press=OK https://localhost:443/
   [[ ! "$output" =~ "413"  ]]
 }
+
+@test "It should log to STDOUT" {
+  pkill nginx
+  /usr/sbin/nginx > /tmp/nginx.log &
+  curl localhost:80 > /dev/null 2>&1
+  [[ -s /tmp/nginx.log ]]
+}
