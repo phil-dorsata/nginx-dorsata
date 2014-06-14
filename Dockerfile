@@ -1,4 +1,4 @@
-FROM quay.io/aptible/ubuntu:12.04
+FROM quay.io/aptible/ubuntu:14.04
 
 # Install NGiNX from source
 RUN apt-get install -y software-properties-common \
