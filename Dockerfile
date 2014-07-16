@@ -1,6 +1,7 @@
 FROM quay.io/aptible/ubuntu:14.04
 
 # Install NGiNX from source
+RUN apt-get update
 RUN apt-get install -y software-properties-common \
       python-software-properties && \
     add-apt-repository -y ppa:nginx/stable && apt-get update && \
