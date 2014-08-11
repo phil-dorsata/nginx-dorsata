@@ -7,6 +7,7 @@ RUN apt-get install -y software-properties-common \
     add-apt-repository -y ppa:nginx/stable && apt-get update && \
     apt-get -y install nginx && mkdir -p /etc/nginx/ssl
 ADD templates/nginx.conf /etc/nginx/nginx.conf
+ADD templates/nginx-wrapper /usr/sbin/nginx-wrapper
 
 # Install Go (necessary for Heartbleed test)
 RUN apt-get install -y wget && cd /tmp && \
@@ -25,4 +26,4 @@ RUN rm -rf /tmp/go1.2.1.linux-amd64.tar.gz /usr/local/go
 VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/ssl"]
 EXPOSE 80 443
 
-CMD ["/usr/sbin/nginx"]
+CMD ["/usr/sbin/nginx-wrapper"]
