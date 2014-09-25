@@ -15,7 +15,7 @@ To run with your own NGiNX site configuration file:
 
 ## Available Tags
 
-* `latest`: Currently NGiNX 1.6.0
+* `latest`: Currently NGiNX 1.6.2
 
 ## Deployment
 

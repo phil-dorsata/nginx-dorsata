@@ -27,9 +27,9 @@ teardown() {
   pkill nginx
 }
 
-@test "It should install NGiNX 1.6.0" {
+@test "It should install NGiNX 1.6.2" {
   run /usr/sbin/nginx -v
-  [[ "$output" =~ "1.6.0"  ]]
+  [[ "$output" =~ "1.6.2"  ]]
 }
 
 @test "It should pass an external Heartbleed test" {
