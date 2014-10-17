@@ -19,6 +19,7 @@ wait_for_nginx() {
 teardown() {
   pkill nginx-wrapper || true
   pkill nginx || true
+  rm -rf /etc/nginx/ssl/*
 }
 
 @test "It should install NGiNX 1.6.2" {
