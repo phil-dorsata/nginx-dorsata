@@ -15,6 +15,9 @@ RUN apt-get install -y wget && cd /tmp && \
     wget https://go.googlecode.com/files/go1.2.1.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go1.2.1.linux-amd64.tar.gz
 
+# Install tcpserver for tests
+RUN apt-get install -y ucspi-tcp
+
 # Install cURL (necessary for integration tests)
 RUN apt-get -y install curl
 
