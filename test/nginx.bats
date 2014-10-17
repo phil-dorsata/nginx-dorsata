@@ -54,3 +54,10 @@ teardown() {
 @test "It should accept a list of UPSTREAM_SERVERS" {
   skip
 }
+
+@test "It should honor FORCE_SSL" {
+  FORCE_SSL=true wait_for_nginx
+  run curl -I localhost 2>/dev/null
+  [[ "$output" =~ "HTTP/1.1 301 Moved Permanently" ]]
+  [[ "$output" =~ "Location: https://localhost" ]]
+}
