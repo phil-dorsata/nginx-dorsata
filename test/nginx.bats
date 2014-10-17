@@ -20,7 +20,7 @@ simulate_upstream() {
   # `sleep 0.5` is necessary to avoid the following NGiNX error:
   # readv() failed (104: Connection reset by peer) while reading upstream
   cmd="cat ${BATS_TEST_DIRNAME}/upstream-response.txt && sleep 0.5"
-  tcpserver localhost 4000 sh -c "$cmd" &
+  tcpserver 127.0.0.1 4000 sh -c "$cmd" &
 }
 
 teardown() {
