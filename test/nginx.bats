@@ -72,3 +72,15 @@ teardown() {
   [[ "$output" =~ "HTTP/1.1 301 Moved Permanently" ]]
   [[ "$output" =~ "Location: https://localhost" ]]
 }
+
+@test "It should send a Strict-Transport-Security header with FORCE_SSL" {
+  FORCE_SSL=true wait_for_nginx
+  run curl -Ik https://localhost 2>/dev/null
+  [[ "$output" =~ "Strict-Transport-Security: max-age=31536000" ]]
+}
+
+@test "The Strict-Transport-Security header's max-age should be configurable" {
+  FORCE_SSL=true HSTS_MAX_AGE=1234 wait_for_nginx
+  run curl -Ik https://localhost 2>/dev/null
+  [[ "$output" =~ "Strict-Transport-Security: max-age=1234" ]]
+}
