@@ -16,6 +16,10 @@ wait_for_nginx() {
   while ! pgrep -x nginx > /dev/null ; do sleep 0.1; done
 }
 
+local_s_client() {
+  echo OK | openssl s_client -connect localhost:443 $@
+}
+
 simulate_upstream() {
   # `sleep 0.5` is necessary to avoid the following NGiNX error:
   # readv() failed (104: Connection reset by peer) while reading upstream
@@ -83,4 +87,17 @@ teardown() {
   FORCE_SSL=true HSTS_MAX_AGE=1234 wait_for_nginx
   run curl -Ik https://localhost 2>/dev/null
   [[ "$output" =~ "Strict-Transport-Security: max-age=1234" ]]
+}
+
+@test "Its OpenSSL client should support TLS_FALLBACK_SCSV" {
+  FORCE_SSL=true wait_for_nginx
+  run local_s_client -fallback_scsv
+  [ "$status" -eq "0" ]
+}
+
+@test "It should support TLS_FALLBACK_SCSV by default" {
+  FORCE_SSL=true wait_for_nginx
+  run local_s_client -fallback_scsv -no_tls1_2
+  [ "$status" -ne "0" ]
+  [[ "$output" =~ "inappropriate fallback" ]]
 }
