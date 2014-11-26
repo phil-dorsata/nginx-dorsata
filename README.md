@@ -2,16 +2,24 @@
 
 [![Docker Repository on Quay.io](https://quay.io/repository/aptible/nginx/status)](https://quay.io/repository/aptible/nginx)
 
-NGiNX HTTP server.
+NGiNX HTTP reverse proxy server.
 
 ## Installation and Usage
 
     docker pull quay.io/aptible/nginx
     docker run -P quay.io/aptible/nginx
 
-To run with your own NGiNX site configuration file:
+To proxy to an upstream host(s) and port(s), set the `UPSTREAM_SERVERS` environment variable:
 
-    docker run -P -v <sites-enabled-dir>:/etc/nginx/sites-enabled quay.io/aptible/nginx
+    docker run -P -e UPSTREAM_SERVERS=host1:3000,host2:4000 quay.io/aptible/nginx
+
+The server starts with a default self-signed certificate. To load in your own certificate and private key, pass them in as mounted Docker "volumes." For example:
+
+    docker run -v /path/to/server.key:/etc/nginx/ssl/server.key -v /path/to/server.crt:/etc/nginx/ssl/server.crt quay.io/aptible/nginx
+
+To force SSL, set the `FORCE_SSL` environment variable to `true`:
+
+    docker run -e FORCE_SSL=true quay.io/aptible/nginx
 
 ## Available Tags
 

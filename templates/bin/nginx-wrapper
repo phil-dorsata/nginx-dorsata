@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Prepare maintenance page
+if [ -n "${MAINTENANCE_PAGE_URL}" ]; then
+  wget $MAINTENANCE_PAGE_URL -O /usr/share/nginx/html/50x.html 2>/dev/null
+fi
+
+# Process ERB variables in server.conf
+cd /etc/nginx/sites-enabled
+erb server.conf.erb > server.conf
+
+if [ ! -f /etc/nginx/ssl/server.crt ]; then
+  mkdir -p /etc/nginx/ssl
+  cd /etc/nginx/ssl
+  openssl req -new -newkey rsa:1024 -days 365000 -nodes -x509 \
+    -keyout server.key -subj /CN=example.com -out server.crt
+  chmod og-rwx server.key
+fi
+
+/usr/sbin/nginx $@

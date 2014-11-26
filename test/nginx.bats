@@ -1,30 +1,37 @@
 #!/usr/bin/env bats
 
-install-heartbleed() {
+install_heartbleed() {
   export GOPATH=/tmp/gocode
   export PATH=${PATH}:/usr/local/go/bin:${GOPATH}/bin
   go get github.com/FiloSottile/Heartbleed
   go install github.com/FiloSottile/Heartbleed
 }
 
-uninstall-heartbleed() {
+uninstall_heartbleed() {
   rm -rf ${GOPATH}
 }
 
-setup() {
-  cp ${BATS_TEST_DIRNAME}/templates/server.conf /etc/nginx/sites-enabled/
-  cp ${BATS_TEST_DIRNAME}/templates/server.crt /etc/nginx/ssl/
-  cp ${BATS_TEST_DIRNAME}/templates/server.key /etc/nginx/ssl/
+wait_for_nginx() {
+  /usr/local/bin/nginx-wrapper > /tmp/nginx.log &
+  while ! pgrep -x nginx > /dev/null ; do sleep 0.1; done
+}
 
-  /usr/sbin/nginx &
+local_s_client() {
+  echo OK | openssl s_client -connect localhost:443 $@
+}
+
+simulate_upstream() {
+  # `sleep 0.5` is necessary to avoid the following NGiNX error:
+  # readv() failed (104: Connection reset by peer) while reading upstream
+  cmd="cat ${BATS_TEST_DIRNAME}/upstream-response.txt && sleep 0.5"
+  tcpserver 127.0.0.1 4000 sh -c "$cmd" &
 }
 
 teardown() {
-  rm /etc/nginx/sites-enabled/server.conf
-  rm /etc/nginx/ssl/server.crt
-  rm /etc/nginx/ssl/server.key
-
-  pkill nginx
+  pkill nginx-wrapper || true
+  pkill nginx || true
+  pkill tcpserver || true
+  rm -rf /etc/nginx/ssl/*
 }
 
 @test "It should install NGiNX 1.6.2" {
@@ -33,20 +40,64 @@ teardown() {
 }
 
 @test "It should pass an external Heartbleed test" {
-  install-heartbleed
+  install_heartbleed
+  wait_for_nginx
   Heartbleed localhost:443
-  uninstall-heartbleed
+  uninstall_heartbleed
 }
 
 @test "It should accept large file uploads" {
   dd if=/dev/zero of=zeros.bin count=1024 bs=4096
+  wait_for_nginx
   run curl -k --form upload=@zeros.bin --form press=OK https://localhost:443/
   [[ ! "$output" =~ "413"  ]]
 }
 
 @test "It should log to STDOUT" {
-  pkill nginx
-  /usr/sbin/nginx > /tmp/nginx.log &
-  curl localhost:80 > /dev/null 2>&1
+  wait_for_nginx
+  curl localhost > /dev/null 2>&1
   [[ -s /tmp/nginx.log ]]
+}
+
+@test "It should accept and configure a MAINTENANCE_PAGE_URL" {
+  skip
+}
+
+@test "It should accept a list of UPSTREAM_SERVERS" {
+  simulate_upstream
+  UPSTREAM_SERVERS=localhost:4000 wait_for_nginx
+  run curl localhost 2>/dev/null
+  [[ "$output" =~ "Hello World!" ]]
+}
+
+@test "It should honor FORCE_SSL" {
+  FORCE_SSL=true wait_for_nginx
+  run curl -I localhost 2>/dev/null
+  [[ "$output" =~ "HTTP/1.1 301 Moved Permanently" ]]
+  [[ "$output" =~ "Location: https://localhost" ]]
+}
+
+@test "It should send a Strict-Transport-Security header with FORCE_SSL" {
+  FORCE_SSL=true wait_for_nginx
+  run curl -Ik https://localhost 2>/dev/null
+  [[ "$output" =~ "Strict-Transport-Security: max-age=31536000" ]]
+}
+
+@test "The Strict-Transport-Security header's max-age should be configurable" {
+  FORCE_SSL=true HSTS_MAX_AGE=1234 wait_for_nginx
+  run curl -Ik https://localhost 2>/dev/null
+  [[ "$output" =~ "Strict-Transport-Security: max-age=1234" ]]
+}
+
+@test "Its OpenSSL client should support TLS_FALLBACK_SCSV" {
+  FORCE_SSL=true wait_for_nginx
+  run local_s_client -fallback_scsv
+  [ "$status" -eq "0" ]
+}
+
+@test "It should support TLS_FALLBACK_SCSV by default" {
+  FORCE_SSL=true wait_for_nginx
+  run local_s_client -fallback_scsv -no_tls1_2
+  [ "$status" -ne "0" ]
+  [[ "$output" =~ "inappropriate fallback" ]]
 }
