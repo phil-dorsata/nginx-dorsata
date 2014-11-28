@@ -16,6 +16,13 @@ wait_for_nginx() {
   while ! pgrep -x nginx > /dev/null ; do sleep 0.1; done
 }
 
+wait_for_proxy_protocol() {
+  # This is really weird, but it appears NGiNX takes several seconds to
+  # correctly handle Proxy Protocol requests
+  haproxy -f ${BATS_TEST_DIRNAME}/haproxy.cfg
+  while ! curl localhost:8080 &> /dev/null ; do sleep 0.1 ; done
+}
+
 local_s_client() {
   echo OK | openssl s_client -connect localhost:443 $@
 }
@@ -31,6 +38,7 @@ teardown() {
   pkill nginx-wrapper || true
   pkill nginx || true
   pkill tcpserver || true
+  pkill haproxy || true
   rm -rf /etc/nginx/ssl/*
 }
 
@@ -50,12 +58,20 @@ teardown() {
   dd if=/dev/zero of=zeros.bin count=1024 bs=4096
   wait_for_nginx
   run curl -k --form upload=@zeros.bin --form press=OK https://localhost:443/
+  [ "$status" -eq "0" ]
   [[ ! "$output" =~ "413"  ]]
 }
 
 @test "It should log to STDOUT" {
   wait_for_nginx
   curl localhost > /dev/null 2>&1
+  [[ -s /tmp/nginx.log ]]
+}
+
+@test "It should log to STDOUT (Proxy Protocol)" {
+  PROXY_PROTOCOL=true wait_for_nginx
+  wait_for_proxy_protocol
+  curl localhost:8080 > /dev/null 2>&1
   [[ -s /tmp/nginx.log ]]
 }
 
@@ -67,6 +83,22 @@ teardown() {
   simulate_upstream
   UPSTREAM_SERVERS=localhost:4000 wait_for_nginx
   run curl localhost 2>/dev/null
+  [[ "$output" =~ "Hello World!" ]]
+}
+
+@test "It should accept a list of UPSTREAM_SERVERS (Proxy Protocol)" {
+  simulate_upstream
+  PROXY_PROTOCOL=true UPSTREAM_SERVERS=localhost:4000 wait_for_nginx
+  wait_for_proxy_protocol
+  run curl localhost:8080 2>/dev/null
+  [[ "$output" =~ "Hello World!" ]]
+}
+
+@test "It should handle HTTPS over Proxy Protocol" {
+  simulate_upstream
+  PROXY_PROTOCOL=true UPSTREAM_SERVERS=localhost:4000 wait_for_nginx
+  wait_for_proxy_protocol
+  run curl -k https://localhost:8443 2>/dev/null
   [[ "$output" =~ "Hello World!" ]]
 }
 
