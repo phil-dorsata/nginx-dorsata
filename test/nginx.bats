@@ -48,6 +48,7 @@ teardown() {
 }
 
 @test "It should pass an external Heartbleed test" {
+  skip
   install_heartbleed
   wait_for_nginx
   Heartbleed localhost:443
