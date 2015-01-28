@@ -21,6 +21,25 @@ To force SSL, set the `FORCE_SSL` environment variable to `true`:
 
     docker run -e FORCE_SSL=true quay.io/aptible/nginx
 
+### Simulating trusted SSL connections
+
+If you're on OS X running boot2docker, you can configure your system to trust NGiNX's self-signed certificate by taking the following steps:
+
+1. Add an entry to your /etc/hosts file mapping your Docker IP address:
+
+        sudo echo $(boot2docker ip 2>/dev/null) example.com >> /etc/hosts
+
+1. Start your NGiNX container (daemonized), and copy the automatically-generated certificate to your desktop.
+
+        ID=$(docker run -d -p 80:80 -p 443:443 quay.io/aptible/nginx)
+        docker cp ${ID}:/etc/nginx/ssl/server.crt /tmp/
+        open /tmp/server.crt
+
+1. Choose to "always trust" it within Keychain.
+
+1. Visit https://example.com and see the trusted certificate.
+
+
 ## Available Tags
 
 * `latest`: Currently NGiNX 1.6.2
