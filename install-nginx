@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -e
+
+mkdir /nginx && cd /nginx
+
+NGINX_VERSION=1.6.2
+wget http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz
+tar zxf nginx-$NGINX_VERSION.tar.gz
+cd nginx-$NGINX_VERSION
+
+# This patch is necessary to compile against musl (Alpine's C standard library).
+# The patch has actually been merged into nginx, but later than 1.6.2.
+wget http://git.alpinelinux.org/cgit/aports/plain/main/nginx/musl-crypt-fix.patch
+patch -p1 -i musl-crypt-fix.patch
+
+# Cribbing from
+# http://git.alpinelinux.org/cgit/aports/tree/main/nginx/APKBUILD
+# but adding --with-http_realip_module to support "set_real_ip_from" directive
+# and removing some options which we may not need.
+apk-install build-base pcre-dev openssl-dev zlib-dev
+mkdir -p /tmp/nginx
+./configure \
+  --prefix=/usr \
+  --conf-path=/etc/nginx/nginx.conf \
+  --pid-path=/var/run/nginx.pid \
+  --lock-path=/var/run/nginx.lock \
+  --error-log-path=/var/log/nginx/error.log \
+  --http-log-path=/var/log/nginx/access.log \
+  --http-client-body-temp-path=/tmp/nginx/client-body \
+  --http-proxy-temp-path=/tmp/nginx/proxy \
+  --http-fastcgi-temp-path=/tmp/nginx/fastcgi \
+  --user=nginx \
+  --group=nginx \
+  --with-pcre-jit \
+  --with-http_ssl_module \
+  --with-http_gzip_static_module \
+  --with-http_realip_module
+make && make install
+apk del build-base openssl-dev pcre-dev zlib-dev && apk-install pcre
+cd / && rm -rf nginx
+
+# Create the user and group under which the nginx process will run.
+addgroup -S nginx 2>/dev/null || true
+adduser -G nginx -H -s /sbin/nologin -D nginx 2>/dev/null || true

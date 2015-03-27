@@ -13,7 +13,7 @@ uninstall_heartbleed() {
 
 wait_for_nginx() {
   /usr/local/bin/nginx-wrapper > /tmp/nginx.log &
-  while ! pgrep -x nginx > /dev/null ; do sleep 0.1; done
+  while ! pgrep -x "nginx: worker process" > /dev/null ; do sleep 0.1; done
 }
 
 wait_for_proxy_protocol() {
@@ -28,16 +28,14 @@ local_s_client() {
 }
 
 simulate_upstream() {
-  # `sleep 0.5` is necessary to avoid the following NGiNX error:
-  # readv() failed (104: Connection reset by peer) while reading upstream
-  cmd="cat ${BATS_TEST_DIRNAME}/upstream-response.txt && sleep 0.5"
-  tcpserver 127.0.0.1 4000 sh -c "$cmd" &
+  BATS_TEST_DIRNAME="$BATS_TEST_DIRNAME" "$BATS_TEST_DIRNAME"/upstream-server &
 }
 
 teardown() {
   pkill nginx-wrapper || true
   pkill nginx || true
-  pkill tcpserver || true
+  pkill -f upstream-server || true
+  pkill nc || true
   pkill haproxy || true
   rm -rf /etc/nginx/ssl/*
 }

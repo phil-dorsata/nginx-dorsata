@@ -1,41 +1,25 @@
-FROM quay.io/aptible/ubuntu:14.04
+FROM quay.io/aptible/alpine
 
-# Install NGiNX from source
-RUN apt-get update
-RUN apt-get -y install software-properties-common \
-      python-software-properties && \
-    add-apt-repository -y ppa:nginx/stable && apt-get update && \
-    apt-get -y install nginx && mkdir -p /etc/nginx/ssl
+# ruby necessary for ERB
+# curl necessary for integration tests
+RUN apk-install ruby=2.1.5-r1 curl
 
-# Install Ruby (necessary for ERB templating)
-RUN apt-get -y install ruby
+ADD install-nginx /tmp/
+RUN /tmp/install-nginx
 
-# Install Go (necessary for Heartbleed test)
-RUN apt-get -y install wget && cd /tmp && \
-    wget https://go.googlecode.com/files/go1.2.1.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.2.1.linux-amd64.tar.gz
-
-# Install tcpserver for tests
-RUN apt-get -y install ucspi-tcp
-
-# Install cURL (necessary for integration tests)
-RUN apt-get -y install curl
-
-# Install HAProxy (necessary for Proxy Protocol integration tests)
-RUN add-apt-repository ppa:vbernat/haproxy-1.5
-RUN apt-get update && apt-get -y install haproxy
+# TODO: heartbleed test?
 
 ADD templates/etc /etc
 ADD templates/bin /usr/local/bin
 
 ADD test /tmp/test
-RUN bats /tmp/test
-
-# Uninstall Go
-RUN rm -rf /tmp/go1.2.1.linux-amd64.tar.gz /usr/local/go
-
-# Uninstall haproxy
-RUN apt-get -y remove haproxy
+# haproxy necessary for Proxy Protocol integration tests
+# haproxy 1.5 is not in the mainline alpine repository as of this writing (Feb 15, 2015).
+# cf. http://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management#Add_a_Package
+RUN apk-install haproxy=1.5.11-r0 --repository http://dl-4.alpinelinux.org/alpine/edge/main \
+	&& bats /tmp/test \
+	&& rm -rf /tmp/nginx/* \
+	&& apk del haproxy
 
 VOLUME /etc/nginx/ssl
 
