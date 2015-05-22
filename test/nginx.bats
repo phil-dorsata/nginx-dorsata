@@ -132,3 +132,15 @@ teardown() {
   [ "$status" -ne "0" ]
   [[ "$output" =~ "inappropriate fallback" ]]
 }
+
+@test "It should use at least a 2048 EDH key" {
+  FORCE_SSL=true wait_for_nginx
+  run local_s_client -cipher "EDH"
+  [[ "$output" =~ "Server Temp Key: DH, 2048 bits" ]]
+}
+
+@test "It disables export ciphers" {
+  FORCE_SSL=true wait_for_nginx
+  run local_s_client -cipher "EXP"
+  [ "$status" -eq 1 ]
+}

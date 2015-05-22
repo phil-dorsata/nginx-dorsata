@@ -12,6 +12,10 @@ RUN /tmp/install-nginx
 ADD templates/etc /etc
 ADD templates/bin /usr/local/bin
 
+# Generate a 2048-bit Diffie-Hellman group in line with recommendations
+# at https://weakdh.org/sysadmin.html.
+RUN openssl dhparam -out /etc/nginx/dhparams.pem 2048
+
 ADD test /tmp/test
 # haproxy necessary for Proxy Protocol integration tests
 # haproxy 1.5 is not in the mainline alpine repository as of this writing (Feb 15, 2015).
