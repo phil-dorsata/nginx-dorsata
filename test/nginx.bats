@@ -144,3 +144,21 @@ teardown() {
   run local_s_client -cipher "EXP"
   [ "$status" -eq 1 ]
 }
+
+@test "It allows RC4 for SSLv3" {
+  wait_for_nginx
+  run local_s_client -cipher "RC4" -ssl3
+  [ "$status" -eq 0 ]
+}
+
+@test "It disables block ciphers for SSLv3" {
+  wait_for_nginx
+  run local_s_client -cipher "AES" -ssl3
+  [ "$status" -ne 0 ]
+}
+
+@test "It support block ciphers for TLSv1.x" {
+  wait_for_nginx
+  run local_s_client -cipher "AES" -tls1_2
+  [ "$status" -eq 0 ]
+}
