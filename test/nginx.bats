@@ -134,9 +134,17 @@ teardown() {
 }
 
 @test "It should use at least a 2048 EDH key" {
+  # TODO: re-enable this test once we're using OpenSSL v.1.0.2 or greater.
+  skip
   FORCE_SSL=true wait_for_nginx
   run local_s_client -cipher "EDH"
   [[ "$output" =~ "Server Temp Key: DH, 2048 bits" ]]
+}
+
+@test "It should have at least a 2048 EDH key available" {
+   # TODO: remove this test in favor of the previous test once possible.
+   run openssl dhparam -in /etc/nginx/dhparams.pem -check -text
+   [[ "$output" =~ "DH Parameters: (2048 bit)" ]]
 }
 
 @test "It disables export ciphers" {
@@ -160,5 +168,15 @@ teardown() {
 @test "It support block ciphers for TLSv1.x" {
   wait_for_nginx
   run local_s_client -cipher "AES" -tls1_2
+  [ "$status" -eq 0 ]
+}
+
+@test "It allows CloudFront-supported ciphers when using SSLv3" {
+  # To mitigate POODLE attacks, we don't allow ciphers running in CBC mode under SSLv3.
+  # This leaves only RC4-MD5 as an option for custom origins behind CloudFront. See
+  # http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.html
+  # for more detail.
+  wait_for_nginx
+  run local_s_client -cipher "RC4-MD5" -ssl3
   [ "$status" -eq 0 ]
 }
