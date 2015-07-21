@@ -75,7 +75,10 @@ teardown() {
 }
 
 @test "It should accept and configure a MAINTENANCE_PAGE_URL" {
-  skip
+  UPSTREAM_SERVERS=localhost:4000 \
+    MAINTENANCE_PAGE_URL=https://www.aptible.com/404.html wait_for_nginx
+  run curl localhost 2>/dev/null
+  [[ "$output" =~ "@aptiblestatus" ]]
 }
 
 @test "It should accept a list of UPSTREAM_SERVERS" {
