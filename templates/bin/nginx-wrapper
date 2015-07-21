@@ -2,7 +2,7 @@
 
 # Prepare maintenance page
 if [ -n "${MAINTENANCE_PAGE_URL}" ]; then
-  wget $MAINTENANCE_PAGE_URL -O /usr/share/nginx/html/50x.html 2>/dev/null
+  curl -s "${MAINTENANCE_PAGE_URL}" > /usr/html/50x.html
 fi
 
 # Process ERB variables in server.conf
