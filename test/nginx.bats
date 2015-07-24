@@ -31,6 +31,11 @@ simulate_upstream() {
   BATS_TEST_DIRNAME="$BATS_TEST_DIRNAME" "$BATS_TEST_DIRNAME"/upstream-server &
 }
 
+setup() {
+  TMPDIR=$(mktemp -d)
+  cp /usr/html/* "$TMPDIR"
+}
+
 teardown() {
   pkill nginx-wrapper || true
   pkill nginx || true
@@ -38,6 +43,7 @@ teardown() {
   pkill nc || true
   pkill haproxy || true
   rm -rf /etc/nginx/ssl/*
+  cp "$TMPDIR"/* /usr/html
 }
 
 @test "It should install NGiNX 1.6.2" {
