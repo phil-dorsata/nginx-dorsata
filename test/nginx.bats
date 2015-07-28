@@ -189,3 +189,13 @@ teardown() {
   run local_s_client -cipher "RC4-MD5" -ssl3
   [ "$status" -eq 0 ]
 }
+
+@test "It allows underscores in headers" {
+  rm /tmp/nc.log || true
+  nc -l -p 4000 127.0.0.1 > /tmp/nc.log &
+  UPSTREAM_SERVERS=localhost:4000 wait_for_nginx
+  curl --header "NoUnderscores: true" --header "SOME_UNDERSCORES: true" --max-time 1 http://localhost
+  run cat /tmp/nc.log
+  [[ "$output" =~ "NoUnderscores: true" ]]
+  [[ "$output" =~ "SOME_UNDERSCORES: true" ]]
+}
