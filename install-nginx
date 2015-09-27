@@ -4,27 +4,10 @@ set -e
 
 mkdir /nginx && cd /nginx
 
-NGINX_VERSION=1.6.2
+NGINX_VERSION=1.9.2
 wget http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz
 tar zxf nginx-$NGINX_VERSION.tar.gz
 cd nginx-$NGINX_VERSION
-
-# This patch is necessary to compile against musl (Alpine's C standard library).
-# The patch has actually been merged into nginx, but later than 1.6.2.
-echo "--- bundle/src/os/unix/ngx_user.c.orig
-+++ bundle/src/os/unix/ngx_user.c
-@@ -31,8 +31,10 @@
-     struct crypt_data   cd;
-
-     cd.initialized = 0;
-+#ifdef __GLIBC__
-     /* work around the glibc bug */
-     cd.current_salt[0] = ~salt[0];
-+#endif
-
-     value = crypt_r((char *) key, (char *) salt, &cd);
-" > musl-crypt-fix.patch
-patch -p1 -i musl-crypt-fix.patch
 
 # Cribbing from
 # http://git.alpinelinux.org/cgit/aports/tree/main/nginx/APKBUILD

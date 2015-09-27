@@ -46,9 +46,9 @@ teardown() {
   cp "$TMPDIR"/* /usr/html
 }
 
-@test "It should install NGiNX 1.6.2" {
+@test "It should install NGiNX 1.9.2" {
   run /usr/sbin/nginx -v
-  [[ "$output" =~ "1.6.2"  ]]
+  [[ "$output" =~ "1.9.2"  ]]
 }
 
 @test "It should pass an external Heartbleed test" {
