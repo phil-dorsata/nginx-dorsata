@@ -221,3 +221,9 @@ teardown() {
   run cat /tmp/nc.log
   [[ "$output" =~ "X-Request-Start: t=" ]]
 }
+
+@test "It supports GZIP compression of responses" {
+  simulate_upstream
+  UPSTREAM_SERVERS=localhost:4000 wait_for_nginx
+  curl -H "Accept-Encoding: gzip" localhost | gunzip -c | grep "Hello World!"
+}
