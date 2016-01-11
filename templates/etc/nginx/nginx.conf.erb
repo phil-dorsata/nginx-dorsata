@@ -34,6 +34,8 @@ http {
 
   gzip on;
   gzip_disable "msie6";
+  gzip_types application/json application/javascript text/css;
+  gzip_vary on;
 
 <% if ENV['DISABLE_WEAK_CIPHER_SUITES'] %>
   # Only TLS 1.0 and up, enable PFS for most clients but provide DES-CBC3-SHA
