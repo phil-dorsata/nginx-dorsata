@@ -2,7 +2,7 @@ FROM quay.io/aptible/alpine
 
 # ruby necessary for ERB
 # curl necessary for integration tests
-RUN apk-install ruby=2.1.5-r1 curl
+RUN apk-install ruby curl
 
 ADD install-nginx /tmp/
 RUN /tmp/install-nginx
