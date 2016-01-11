@@ -7,14 +7,12 @@ RUN apk-install ruby=2.1.5-r1 curl
 ADD install-nginx /tmp/
 RUN /tmp/install-nginx
 
-# TODO: heartbleed test?
-
-ADD templates/etc /etc
-ADD templates/bin /usr/local/bin
-
 # Generate a 2048-bit Diffie-Hellman group in line with recommendations
 # at https://weakdh.org/sysadmin.html.
 RUN openssl dhparam -out /etc/nginx/dhparams.pem 2048
+
+ADD templates/etc /etc
+ADD templates/bin /usr/local/bin
 
 ADD test /tmp/test
 # haproxy necessary for Proxy Protocol integration tests
