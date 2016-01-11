@@ -211,3 +211,13 @@ teardown() {
   run local_s_client -cipher "RC4"
   [ "$status" -eq 1 ]
 }
+
+@test "It sets an X-Request-Start header" {
+  # https://docs.newrelic.com/docs/apm/applications-menu/features/request-queue-server-configuration-examples#nginx
+  rm /tmp/nc.log || true
+  nc -l -p 4000 127.0.0.1 > /tmp/nc.log &
+  UPSTREAM_SERVERS=localhost:4000 wait_for_nginx
+  curl --max-time 1 http://localhost
+  run cat /tmp/nc.log
+  [[ "$output" =~ "X-Request-Start: t=" ]]
+}
