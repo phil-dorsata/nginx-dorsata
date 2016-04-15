@@ -45,6 +45,20 @@ IE 6 on Windows XP, which only fails because Qualys tests the default
 installation: if TLS 1.0 is enabled in IE 6, our configuration can be used to
 connect.
 
+To allow more control over the ciphers and protocols used by NGiNX, we also
+recognize the environment variables `SSL_CIPHERS_OVERRIDE` and
+`SSL_PROTOCOLS_OVERRIDE` which can be used to completely override the NGiNX
+`ssl_ciphers` and `ssl_protocols` settings. For example, to remove TLS 1.0 from
+the available list of protocols but keep the rest of the
+`DISABLE_WEAK_CIPHER_SUITES` settings, use `SSL_PROTOCOLS_OVERRIDE` to specify
+support for only TLS 1.1 and 1.2:
+
+    docker run -e DISABLE_WEAK_CIPHER_SUITES=true SSL_PROTOCOLS_OVERRIDE="TLSv1.1 TLSv1.2" quay.io/aptible/nginx
+
+Since both `SSL_PROTOCOLS_OVERRIDE` and `SSL_CIPHERS_OVERRIDE` are injected
+verbatim into the NGiNX configuration, a syntax error in either can keep NGiNX
+from starting.
+
 ### Simulating trusted SSL connections
 
 If you're on OS X running boot2docker, you can configure your system to trust NGiNX's self-signed certificate by taking the following steps:
