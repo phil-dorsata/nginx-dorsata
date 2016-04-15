@@ -236,6 +236,18 @@ teardown() {
   [ "$status" -eq 0 ]
 }
 
+@test "It removes any semicolons in SSL_CIPHERS_OVERRIDE" {
+  SSL_CIPHERS_OVERRIDE="ECDHE;;-RSA-AES256-GCM-SHA384;" wait_for_nginx
+  run local_s_client -cipher ECDHE-RSA-AES256-GCM-SHA384
+  [ "$status" -eq 0 ]
+}
+
+@test "It removes any semicolons in SSL_PROTOCOLS_OVERRIDE" {
+  SSL_PROTOCOLS_OVERRIDE=";;;TLSv1.1; TLSv1.2;" wait_for_nginx
+  run local_s_client -tls1_1
+  [ "$status" -eq 0 ]
+}
+
 @test "It sets an X-Request-Start header" {
   # https://docs.newrelic.com/docs/apm/applications-menu/features/request-queue-server-configuration-examples#nginx
   rm /tmp/nc.log || true

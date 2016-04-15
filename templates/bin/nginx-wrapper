@@ -19,8 +19,8 @@ if [ -n "${DISABLE_WEAK_CIPHER_SUITES}" ]; then
 fi
 # Finally, allow either SSL_CIPHERS or SSL_PROTOCOLS to be overridden
 # individually with *OVERRIDE environment variables.
-SSL_CIPHERS="${SSL_CIPHERS_OVERRIDE:-$SSL_CIPHERS}"
-SSL_PROTOCOLS="${SSL_PROTOCOLS_OVERRIDE:-$SSL_PROTOCOLS}"
+[ -n "$SSL_CIPHERS_OVERRIDE" ] && SSL_CIPHERS="${SSL_CIPHERS_OVERRIDE//;}"
+[ -n "$SSL_PROTOCOLS_OVERRIDE" ] && SSL_PROTOCOLS="${SSL_PROTOCOLS_OVERRIDE//;}"
 export SSL_CIPHERS SSL_PROTOCOLS
 
 # Process ERB variables in nginx.conf and server.conf
