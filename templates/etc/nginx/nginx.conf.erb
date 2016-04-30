@@ -15,6 +15,9 @@ http {
   client_max_body_size 0;
   underscores_in_headers on;
 
+  # Allow for large headers
+  large_client_header_buffers 4 32k;
+
   # http://stackoverflow.com/a/3710649
   proxy_buffers 8 16k;
   proxy_buffer_size 32k;
