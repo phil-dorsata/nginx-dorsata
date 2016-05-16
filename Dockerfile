@@ -14,11 +14,6 @@ RUN openssl dhparam -out /etc/nginx/dhparams.pem 2048
 ADD templates/etc /etc
 ADD templates/bin /usr/local/bin
 
-ADD test /tmp/test
-RUN apk-install haproxy openssl-dev \
-	&& bats /tmp/test \
-	&& rm -rf /tmp/nginx/* \
-	&& apk del haproxy openssl-dev
 
 VOLUME /etc/nginx/ssl
 
