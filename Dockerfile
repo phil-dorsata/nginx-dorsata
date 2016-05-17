@@ -14,8 +14,6 @@ RUN openssl dhparam -out /etc/nginx/dhparams.pem 2048
 ADD templates/etc /etc
 ADD templates/bin /usr/local/bin
 
-ADD .aptible.env .aptible.env
-
 VOLUME /etc/nginx/ssl
 
 EXPOSE 80 443

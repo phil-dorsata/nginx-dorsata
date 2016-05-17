@@ -1,1 +1,1 @@
-nginx: /usr/local/bin/nginx-wrapper
+nginx: PRODUCTION=true /usr/local/bin/nginx-wrapper
