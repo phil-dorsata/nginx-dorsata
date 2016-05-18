@@ -59,8 +59,6 @@ http {
     listen 80;
     server_name dorsata-dev.com
 
-    return 301 https://$server_name$request_uri;
-
     keepalive_timeout 5;
 
     error_page 502 503 504 /50x.html;
