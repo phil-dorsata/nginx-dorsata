@@ -16,6 +16,6 @@ ADD templates/bin /usr/local/bin
 
 VOLUME /etc/nginx/ssl
 
-EXPOSE 80 443
+EXPOSE 443
 
 CMD ["/usr/local/bin/nginx-wrapper"]
