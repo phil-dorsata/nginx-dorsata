@@ -47,27 +47,18 @@ http {
   ssl_dhparam /etc/nginx/dhparams.pem;
 
   include /etc/nginx/conf.d/*.conf;
+  include /etc/nginx/sites-enabled/*.conf;
 
   upstream web {
     server app-2996.on-aptible.com;
   }
 
+
   server {
 
-    <% if ENV['PROXY_PROTOCOL'] == 'true' %>
-    listen 443 proxy_protocol;
-
-    set_real_ip_from 0.0.0.0/0;
-    real_ip_header proxy_protocol;
-
-    access_log /proc/self/fd/1 proxy_log;
-    <% else %>
-    listen 443;
-    <% end %>
-
-    ssl on;
-    ssl_certificate /etc/nginx/ssl/server.crt;
-    ssl_certificate_key /etc/nginx/ssl/server.key;
+    listen 80;
+    listen 443 default_server;
+    server_name dorsata-dev.com
 
     keepalive_timeout 5;
 
@@ -75,23 +66,16 @@ http {
     location /50x.html {
     }
 
-    <% if ENV['FORCE_SSL'] == 'true' %>
-    add_header Strict-Transport-Security max-age=<%= ENV['HSTS_MAX_AGE'] || 31536000 %>;
-    <% end %>
-
-    server_name dorsata-dev.com;
-
-
-
     location / {
-      proxy_set_header X-Forwarded-Proto https;
+
+
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header Host $http_host;
       proxy_set_header X-Request-Start "t=${msec}";
       proxy_redirect off;
 
 
-      proxy_pass https://web;
+      proxy_pass http://web;
 
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;
@@ -100,6 +84,7 @@ http {
       break;
     }
   }
+
 
 
 }
