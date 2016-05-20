@@ -50,7 +50,7 @@ http {
 
 
   upstream mirth_http {
-    server mirth:3001;
+    server mirth:3000;
   }
 
 
@@ -58,14 +58,10 @@ http {
     server web:3000;
   }
 
-  upstream kibana_http {
-    server web:3000;
-  }
-
   server {
 
     listen 80;
-    server_name mirth.dorsata-dev.com
+    server_name mirth.dorsata-local.com
 
 
     keepalive_timeout 5;
@@ -96,7 +92,7 @@ http {
   server {
 
     listen 80;
-    server_name dorsata-dev.com
+    server_name dorsata-local.com
 
 
     keepalive_timeout 5;
@@ -152,7 +148,7 @@ http {
     add_header Strict-Transport-Security max-age=<%= ENV['HSTS_MAX_AGE'] || 31536000 %>;
     <% end %>
 
-    server_name mirth.dorsata-dev.com;
+    server_name mirth.dorsata-local.com;
 
 
 
@@ -179,7 +175,7 @@ http {
   server {
 
     listen 80;
-    server_name kibana.dorsata-dev.com
+    server_name kibana.dorsata-local.com
 
 
     keepalive_timeout 5;
