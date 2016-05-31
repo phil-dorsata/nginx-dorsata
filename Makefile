@@ -1,5 +1,5 @@
 DOCKER = docker
-REPO = quay.io/aptible/nginx
+REPO = quay.io/dorsata/nginx-dorsata
 
 TAG = $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
 ifeq ($(TAG), master)

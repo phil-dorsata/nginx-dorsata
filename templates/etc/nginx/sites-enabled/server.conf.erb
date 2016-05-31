@@ -1,22 +1,17 @@
-<% if ENV['UPSTREAM_SERVERS'] %>
-upstream containers {
-  <% (ENV['UPSTREAM_SERVERS']).split(',').each do |server| %>
-  server <%= server %>;
-  <% end %>
+upstream mirth_http {
+  server mirth:3000;
 }
-<% end %>
+
+
+upstream web_http {
+  server web:3000;
+}
 
 server {
-  <% if ENV['PROXY_PROTOCOL'] == 'true' %>
-  listen 80 proxy_protocol;
 
-  set_real_ip_from 0.0.0.0/0;
-  real_ip_header proxy_protocol;
-
-  access_log /proc/self/fd/1 proxy_log;
-  <% else %>
   listen 80;
-  <% end %>
+  server_name mirth.dorsata-local.com
+
 
   keepalive_timeout 5;
 
@@ -25,27 +20,56 @@ server {
   }
 
   location / {
-    <% if ENV['FORCE_SSL'] == 'true' %>
-    return 301 https://$host$request_uri;
-    <% end %>
+
 
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header Host $http_host;
     proxy_set_header X-Request-Start "t=${msec}";
     proxy_redirect off;
 
-    <% if ENV['UPSTREAM_SERVERS'] %>
-    proxy_pass http://containers;
+
+    proxy_pass http://mirth_http;
 
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection "upgrade";
-    <% end %>
+
     break;
   }
 }
 
 server {
+
+  listen 80;
+  server_name dorsata-local.com
+
+
+  error_page 502 503 504 /50x.html;
+  location /50x.html {
+  }
+
+  location / {
+
+
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Request-Start "t=${msec}";
+    proxy_redirect off;
+
+
+    proxy_pass http://web_http;
+
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+
+    break;
+  }
+}
+
+
+server {
+
   <% if ENV['PROXY_PROTOCOL'] == 'true' %>
   listen 443 proxy_protocol;
 
@@ -71,6 +95,10 @@ server {
   add_header Strict-Transport-Security max-age=<%= ENV['HSTS_MAX_AGE'] || 31536000 %>;
   <% end %>
 
+  server_name mirth.dorsata-local.com;
+
+
+
   location / {
     proxy_set_header X-Forwarded-Proto https;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -78,13 +106,14 @@ server {
     proxy_set_header X-Request-Start "t=${msec}";
     proxy_redirect off;
 
-    <% if ENV['UPSTREAM_SERVERS'] %>
-    proxy_pass http://containers;
+
+    proxy_pass http://mirth_http;
 
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection "upgrade";
-    <% end %>
+
     break;
   }
 }
+
